@@ -6,8 +6,10 @@
     (See accompanying file LICENSE_1_0.txt or copy at
     http://www.boost.org/LICENSE_1_0.txt)
 '''
-from conans import ConanFile, tools
+from conan import ConanFile, tools
 import os
+
+required_conan_version = ">=1.53.0"
 
 
 class Package(ConanFile):
@@ -24,7 +26,6 @@ class Package(ConanFile):
         }
     }
     exports = ("README.adoc", "LICENSE.txt")
-    source_subfolder = "source_subfolder"
     settings = []
     no_copy_source = True
 
@@ -62,11 +63,8 @@ class B2():
                 command.append(target)
             else:
                 command.extend(target)
-        context = tools.no_op()
-        if self.toolset == "msvc" and not self.conanfile.settings.compiler.get_safe("toolset", default=""):
-            context = tools.vcvars(self.conanfile.settings)
-        with context:
-            return self.conanfile.run(command, run_environment=True)
+        self.conanfile.output.info('"{}"'.format('" "'.join(command)))
+        return self.conanfile.run(command, run_environment=True)
 
     @property
     def toolset(self):
@@ -76,6 +74,7 @@ class B2():
             'gcc': 'gcc',
             'sun-cc': 'sun',
             'Visual Studio': 'msvc',
+            'msvc': 'msvc'
         }.get(self.conanfile.settings.get_safe('compiler'))+'-'+self.toolset_version
 
     @property
@@ -87,17 +86,30 @@ class B2():
                 "10": "10.0",
                 "11": "11.0",
                 "12": "12.0",
-                "13": "13.0",
                 "14": "14.0",
                 "15": "14.1",
-                "16": "14.3",
-                "17": "14.4",
+                "16": "14.2",
+                "17": "14.3",
             }.get(self.conanfile.settings.compiler.version)
+        if self.conanfile.settings.compiler == 'msvc':
+            msvc_version = self.conanfile.settings.compiler.version
+            return {
+                "140": "8.0",
+                "150": "9.0",
+                "160": "10.0",
+                "170": "11.0",
+                "180": "12.0",
+                "190": "14.0",
+                "191": "14.1",
+                "192": "14.2",
+                "193": "14.3",
+            }.get('{}'.format(msvc_version))
         return str(self.conanfile.settings.compiler.version)
 
     @property
     def os(self):
         return {
+            "AIX": "aix",
             "Android": "android",
             "FreeBSD": "freebsd",
             "iOS": "iphone",
@@ -145,14 +157,14 @@ class B2():
 
     @property
     def cxxstd(self):
-        if self.conanfile.settings.get_safe('cppstd'):
-            return str(self.conanfile.settings.get_safe('cppstd')).removeprefix("gnu")
+        if self.conanfile.settings.compiler.get_safe('cppstd'):
+            return str(self.conanfile.settings.compiler.get_safe('cppstd')).removeprefix("gnu")
         else:
             None
 
     @property
     def cxxstd_dialect(self):
-        return 'gnu' if str(self.conanfile.settings.get_safe('cppstd')).startswith('gnu') else None
+        return 'gnu' if str(self.conanfile.settings.compiler.get_safe('cppstd')).startswith('gnu') else None
 
     @property
     def stdlib(self):
@@ -160,6 +172,7 @@ class B2():
             "libstdc++": "gnu",
             "libstdc++11": "gnu11",
             "libc++": "libc++",
+            "libstlport": "sun-stlport",
         }.get(str(self.conanfile.settings.compiler.libcxx), "native")
 
     @property
@@ -226,14 +239,10 @@ class B2():
     def _add_flags_other(self):
         cxxflags = []
         linkflags = []
-        if tools.is_apple_os(self.conanfile.settings.os):
+        if tools.apple.is_apple_os(self.conanfile):
             if self.settings.get_safe("os.version"):
-                cxxflags.append(tools.apple_deployment_target_flag(
-                    self.conanfile.settings.os,
-                    self.conanfile.settings.get_safe("os.version"),
-                    self.conanfile.settings.get_safe("os.sdk"),
-                    self.conanfile.settings.get_safe("os.subsystem"),
-                    self.conanfile.settings.get_safe("arch")))
+                cxxflags.append(tools.apple.apple_min_version_flag(
+                    self.conanfile))
                 if self.conanfile.settings.get_safe("os.subsystem") == "catalyst":
                     cxxflags.append("--target=arm64-apple-ios-macabi")
                     link_flags.append("--target=arm64-apple-ios-macabi")
