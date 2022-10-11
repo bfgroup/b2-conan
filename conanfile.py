@@ -14,6 +14,7 @@ required_conan_version = ">=1.53.0"
 
 class Package(ConanFile):
     name = "b2-conan"
+    version = "1.0.0"
     homepage = "https://github.com/bfgroup/b2-conan"
     description = "Build utility tool to invoke b2 for building packages."
     topics = ("b2", "tool", "build")
