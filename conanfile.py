@@ -14,7 +14,7 @@ required_conan_version = ">=1.53.0"
 
 class Package(ConanFile):
     name = "b2-conan"
-    version = "1.0.1"
+    version = "1.0.2"
     homepage = "https://github.com/bfgroup/b2-conan"
     description = "Build utility tool to invoke b2 for building packages."
     topics = ("b2", "tool", "build")
@@ -105,6 +105,8 @@ class B2():
                 "192": "14.2",
                 "193": "14.3",
             }.get('{}'.format(msvc_version))
+        if self.conanfile.settings.compiler == 'apple-clang':
+            return str(self.conanfile.settings.compiler.version).split('.')[0]
         return str(self.conanfile.settings.compiler.version)
 
     @property
@@ -174,7 +176,7 @@ class B2():
             "libstdc++11": "gnu11",
             "libc++": "libc++",
             "libstlport": "sun-stlport",
-        }.get(str(self.conanfile.settings.compiler.libcxx), "native")
+        }.get(str(self.conanfile.settings.compiler.get_safe("libcxx")), "native")
 
     @property
     def link(self):
