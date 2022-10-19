@@ -1,0 +1,48 @@
+== Overview
+
+A Conan utility to help, and adapt, Conan building to run B2 as needed.
+
+== How To Use
+
+Using this utility is simple using the
+link:https://docs.conan.io/en/latest/extending/python_requires.html[`python_requires`]
+Conan facility.
+
+[source,python]
+----
+from conans import ConanFile, tools
+
+required_conan_version = ">=1.44.0"
+
+
+class Package(ConanFile):
+    name = "my_package"
+    tool_requires = ("b2/[>=4.7.0]@")
+    python_requires = ("b2-conan/1.0.0@bfgroup/b2-conan")
+    source_subfolder = "source_subfolder"
+
+    def build(self):
+        b2 = self.python_requires["b2-conan"].module.B2(self)
+        sources = os.path.join(self.source_folder, self.source_subfolder)
+        with tools.chdir(sources):
+            b2.build()
+----
+
+That, when used in your own package that is based on
+link:https://www.bfgroup.xyz/b2/[B2] will run B2 with the options needed to
+match the Conan build variation.
+
+The  `B2.build` takes a couple of arguments to further control what gets built
+and how:
+
+[source,python]
+----
+def build(self, args=None, build_dir=None, target=None)
+----
+
+* `args` (Optional, Defaulted to `None`) Extra arguments to invoke B2 with.
+* `build_dir` (Optional, Defaulted to `None`) The intermediate output build
+  directory.
+* `target` (Optional, Defaulted to `None`) A set of one or more targets to build.
+  These are added to the command line invocation directly. And must use the B2
+  target syntax.
