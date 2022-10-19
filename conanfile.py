@@ -14,7 +14,7 @@ required_conan_version = ">=1.53.0"
 
 class Package(ConanFile):
     name = "b2-conan"
-    version = "1.0.0"
+    version = "1.0.1"
     homepage = "https://github.com/bfgroup/b2-conan"
     description = "Build utility tool to invoke b2 for building packages."
     topics = ("b2", "tool", "build")
@@ -91,7 +91,7 @@ class B2():
                 "15": "14.1",
                 "16": "14.2",
                 "17": "14.3",
-            }.get(self.conanfile.settings.compiler.version)
+            }.get(str(self.conanfile.settings.compiler.version))
         if self.conanfile.settings.compiler == 'msvc':
             msvc_version = self.conanfile.settings.compiler.version
             return {
@@ -154,7 +154,7 @@ class B2():
             'MinSizeRel': 'minsizerel',
             'Release': 'release',
             'RelWithDebInfo': 'relwithdebinfo',
-        }.get(self.conanfile.settings.get_safe('build_type'))
+        }.get(str(self.conanfile.settings.get_safe('build_type')), "debug")
 
     @property
     def cxxstd(self):
@@ -197,7 +197,7 @@ class B2():
         if self.variant == "debug":
             self.flags.append("variant=debug")
         elif self.variant == "release":
-            self.flags.append("variant=debug")
+            self.flags.append("variant=release")
         elif self.variant == "minsizerel":
             self.flags.extend([
                 "optimization=space",
@@ -241,7 +241,7 @@ class B2():
         cxxflags = []
         linkflags = []
         if tools.apple.is_apple_os(self.conanfile):
-            if self.settings.get_safe("os.version"):
+            if self.conanfile.settings.get_safe("os.version"):
                 cxxflags.append(tools.apple.apple_min_version_flag(
                     self.conanfile))
                 if self.conanfile.settings.get_safe("os.subsystem") == "catalyst":
