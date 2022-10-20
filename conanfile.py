@@ -14,7 +14,7 @@ required_conan_version = ">=1.53.0"
 
 class Package(ConanFile):
     name = "b2-conan"
-    version = "1.0.2"
+    version = "1.0.3"
     homepage = "https://github.com/bfgroup/b2-conan"
     description = "Build utility tool to invoke b2 for building packages."
     topics = ("b2", "tool", "build")
@@ -221,7 +221,7 @@ class B2():
 
     def _add_flags_cxxstd_dialect(self):
         if self.cxxstd_dialect:
-            self.flags.append("cxxstd:dialect=%s" % (self.cxxstd_dialect))
+            self.flags.append("cxxstd-dialect=%s" % (self.cxxstd_dialect))
 
     def _add_flags_runtime_link(self):
         if self.toolset == "msvc":
