@@ -14,7 +14,7 @@ required_conan_version = ">=1.53.0"
 
 class Package(ConanFile):
     name = "b2-conan"
-    version = "1.0.3"
+    version = "1.0.4"
     homepage = "https://github.com/bfgroup/b2-conan"
     description = "Build utility tool to invoke b2 for building packages."
     topics = ("b2", "tool", "build")
@@ -161,7 +161,7 @@ class B2():
     @property
     def cxxstd(self):
         if self.conanfile.settings.compiler.get_safe('cppstd'):
-            return str(self.conanfile.settings.compiler.get_safe('cppstd')).removeprefix("gnu")
+            return str(self.conanfile.settings.compiler.get_safe('cppstd')).replace("gnu", "")
         else:
             None
 
